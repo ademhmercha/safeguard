@@ -1,0 +1,242 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id            String         @id @default(uuid())
+  supabaseId    String         @unique @map("supabase_id")
+  email         String         @unique
+  name          String
+  role          UserRole       @default(PARENT)
+  createdAt     DateTime       @default(now()) @map("created_at")
+  updatedAt     DateTime       @updatedAt @map("updated_at")
+  childProfiles ChildProfile[]
+  notifications Notification[]
+
+  @@map("users")
+}
+
+model ChildProfile {
+  id                  String              @id @default(uuid())
+  parentId            String              @map("parent_id")
+  parent              User                @relation(fields: [parentId], references: [id], onDelete: Cascade)
+  name                String
+  age                 Int
+  avatarUrl           String?             @map("avatar_url")
+  dailyScreenLimit    Int                 @default(120) @map("daily_screen_limit")
+  bedtimeStart        String?             @map("bedtime_start")
+  bedtimeEnd          String?             @map("bedtime_end")
+  isActive            Boolean             @default(true) @map("is_active")
+  createdAt           DateTime            @default(now()) @map("created_at")
+  updatedAt           DateTime            @updatedAt @map("updated_at")
+  devices             Device[]
+  appUsage            AppUsage[]
+  appSessions         AppSession[]
+  screenTimeRecords   ScreenTimeRecord[]
+  restrictionPolicies RestrictionPolicy[]
+  alerts              Alert[]
+  browserHistory      BrowserHistory[]
+  keylogEntries       KeylogEntry[]
+
+  @@map("child_profiles")
+}
+
+model Device {
+  id              String       @id @default(uuid())
+  childProfileId  String       @map("child_profile_id")
+  childProfile    ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  deviceName      String       @map("device_name")
+  deviceModel     String?      @map("device_model")
+  osVersion       String?      @map("os_version")
+  fcmToken        String?      @map("fcm_token")
+  isLocked        Boolean      @default(false) @map("is_locked")
+  lastSeen        DateTime?    @map("last_seen")
+  isActive        Boolean      @default(true) @map("is_active")
+  pairingCode     String?      @unique @map("pairing_code")
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+  deviceCommands  DeviceCommand[]
+
+  @@map("devices")
+}
+
+model AppUsage {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  appName        String       @map("app_name")
+  packageName    String       @map("package_name")
+  usageMinutes   Int          @map("usage_minutes")
+  date           DateTime     @db.Date
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@unique([childProfileId, packageName, date])
+  @@map("app_usage")
+}
+
+model ScreenTimeRecord {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  totalMinutes   Int          @map("total_minutes")
+  date           DateTime     @db.Date
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@unique([childProfileId, date])
+  @@map("screen_time_records")
+}
+
+model RestrictionPolicy {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  policyType     PolicyType   @map("policy_type")
+  packageName    String?      @map("package_name")
+  appName        String?      @map("app_name")
+  isBlocked      Boolean      @default(true) @map("is_blocked")
+  scheduleStart  String?      @map("schedule_start")
+  scheduleEnd    String?      @map("schedule_end")
+  daysOfWeek     Int[]        @map("days_of_week")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("restriction_policies")
+}
+
+model Notification {
+  id        String           @id @default(uuid())
+  userId    String           @map("user_id")
+  user      User             @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  body      String
+  type      NotificationType
+  isRead    Boolean          @default(false) @map("is_read")
+  metadata  Json?
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  @@map("notifications")
+}
+
+model DeviceCommand {
+  id          String        @id @default(uuid())
+  deviceId    String        @map("device_id")
+  device      Device        @relation(fields: [deviceId], references: [id], onDelete: Cascade)
+  command     CommandType
+  payload     Json?
+  status      CommandStatus @default(PENDING)
+  executedAt  DateTime?     @map("executed_at")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  @@map("device_commands")
+}
+
+model Alert {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  alertType      AlertType    @map("alert_type")
+  message        String
+  isResolved     Boolean      @default(false) @map("is_resolved")
+  metadata       Json?
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@map("alerts")
+}
+
+enum UserRole {
+  PARENT
+  ADMIN
+}
+
+enum PolicyType {
+  APP_BLOCK
+  SCHEDULE
+  CONTENT_FILTER
+}
+
+enum NotificationType {
+  SCREEN_TIME_LIMIT
+  APP_BLOCKED
+  DEVICE_LOCKED
+  BEDTIME_ALERT
+  GENERAL
+}
+
+enum CommandType {
+  LOCK_DEVICE
+  UNLOCK_DEVICE
+  BLOCK_APP
+  UNBLOCK_APP
+  UPDATE_LIMITS
+  SYNC_POLICIES
+}
+
+enum CommandStatus {
+  PENDING
+  DELIVERED
+  EXECUTED
+  FAILED
+}
+
+enum AlertType {
+  SCREEN_TIME_EXCEEDED
+  BEDTIME_VIOLATION
+  BLOCKED_APP_ATTEMPT
+  DEVICE_OFFLINE
+  UNUSUAL_ACTIVITY
+  BLOCKED_SITE_ATTEMPT
+}
+
+// Individual app usage session (open → close)
+model AppSession {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  appName        String       @map("app_name")
+  packageName    String       @map("package_name")
+  startedAt      DateTime     @map("started_at")
+  endedAt        DateTime?    @map("ended_at")
+  durationSecs   Int?         @map("duration_secs")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([childProfileId, startedAt(sort: Desc)])
+  @@map("app_sessions")
+}
+
+// Browser URL visits
+model BrowserHistory {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  url            String
+  title          String?
+  domain         String
+  visitedAt      DateTime     @map("visited_at")
+  browserApp     String?      @map("browser_app")
+  isBlocked      Boolean      @default(false) @map("is_blocked")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([childProfileId, visitedAt(sort: Desc)])
+  @@index([childProfileId, domain])
+  @@map("browser_history")
+}
+
+// Search terms typed in browsers / YouTube / Google
+model KeylogEntry {
+  id             String       @id @default(uuid())
+  childProfileId String       @map("child_profile_id")
+  childProfile   ChildProfile @relation(fields: [childProfileId], references: [id], onDelete: Cascade)
+  searchTerm     String       @map("search_term")
+  sourceApp      String       @map("source_app")
+  searchedAt     DateTime     @map("searched_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+
+  @@index([childProfileId, searchedAt(sort: Desc)])
+  @@map("keylog_entries")
+}
