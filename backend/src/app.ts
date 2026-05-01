@@ -27,8 +27,9 @@ const allowedOrigins = [
   process.env.FRONTEND_URL || 'http://localhost:5173',
   'http://localhost:5173',
 ];
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 app.use(cors({
-  origin: (origin, cb) => {
+  origin: (origin: string | undefined, cb: (err: Error | null, allow?: boolean) => void) => {
     if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.vercel.app')) {
       cb(null, true);
     } else {
@@ -36,7 +37,7 @@ app.use(cors({
     }
   },
   credentials: true,
-}));
+}) as any);
 app.use(compression());
 app.use(express.json({ limit: '10mb' }));
 app.use(morgan('combined'));
