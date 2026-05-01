@@ -1,4 +1,5 @@
 import { Users, Smartphone, Clock, AlertTriangle, ChevronRight, Shield } from 'lucide-react';
+import { StatCardSkeleton } from '../components/Skeleton';
 import { useOverview, useScreenTimeSummary } from '../hooks/useAnalytics';
 import { useChildren } from '../hooks/useChildren';
 import { useChildStore } from '../stores/childStore';
@@ -60,17 +61,17 @@ export default function DashboardPage() {
 
       {/* Stat cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Children" value={isLoading ? '—' : overview?.totalChildren ?? 0}
-          icon={<Users />} color="blue" />
-        <StatCard title="Devices Paired" value={isLoading ? '—' : overview?.totalDevices ?? 0}
-          icon={<Smartphone />} color="green" />
-        <StatCard
-          title="Screen Time Today"
-          value={isLoading ? '—' : minutesToHours(overview?.todayScreenTimeMinutes ?? 0)}
-          subtitle="All children combined"
-          icon={<Clock />} color="yellow" />
-        <StatCard title="Unread Alerts" value={isLoading ? '—' : overview?.unreadAlerts ?? 0}
-          icon={<AlertTriangle />} color="red" />
+        {isLoading ? (
+          [...Array(4)].map((_, i) => <StatCardSkeleton key={i} />)
+        ) : (
+          <>
+            <StatCard title="Children" value={overview?.totalChildren ?? 0} icon={<Users />} color="blue" />
+            <StatCard title="Devices Paired" value={overview?.totalDevices ?? 0} icon={<Smartphone />} color="green" />
+            <StatCard title="Screen Time Today" value={minutesToHours(overview?.todayScreenTimeMinutes ?? 0)}
+              subtitle="All children combined" icon={<Clock />} color="yellow" />
+            <StatCard title="Unread Alerts" value={overview?.unreadAlerts ?? 0} icon={<AlertTriangle />} color="red" />
+          </>
+        )}
       </div>
 
       {/* Chart + Children */}
