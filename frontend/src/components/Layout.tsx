@@ -57,7 +57,7 @@ const sidebarBg = 'linear-gradient(175deg, #0c1322 0%, #0e1828 100%)';
 function SidebarContent({ onClose, user, unread, onLogout }: {
   onClose?: () => void;
   user: { name?: string; email?: string } | null;
-  unread: { count: number } | undefined;
+  unread: { count?: number } | undefined;
   onLogout: () => void;
 }) {
   return (
@@ -106,9 +106,9 @@ function SidebarContent({ onClose, user, unread, onLogout }: {
                       {isActive && <span className="absolute left-0 top-1/2 -translate-y-1/2 w-0.5 h-4 rounded-full bg-blue-400" />}
                       <Icon className="w-4 h-4 flex-shrink-0" style={{ color: isActive ? '#60a5fa' : 'rgba(255,255,255,0.4)' }} />
                       <span style={{ color: isActive ? '#bfdbfe' : 'rgba(255,255,255,0.45)' }}>{label}</span>
-                      {label === 'Notifications' && unread?.count > 0 && (
+                      {label === 'Notifications' && (unread?.count ?? 0) > 0 && (
                         <span className="ml-auto bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[18px] h-[18px] flex items-center justify-center px-1">
-                          {unread.count > 9 ? '9+' : unread.count}
+                          {(unread?.count ?? 0) > 9 ? '9+' : unread?.count}
                         </span>
                       )}
                     </>
@@ -198,7 +198,7 @@ export default function Layout() {
             </div>
             <span className="font-bold text-gray-900 text-sm">SafeGuard</span>
           </div>
-          {unread?.count > 0 && (
+          {(unread?.count ?? 0) > 0 && (
             <NavLink to="/notifications" className="relative p-2">
               <Bell className="w-5 h-5 text-gray-500" />
               <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full" />
@@ -231,7 +231,7 @@ export default function Layout() {
                   <>
                     <div className="relative">
                       <Icon className="w-5 h-5" />
-                      {label === 'Alerts' && unread?.count > 0 && (
+                      {label === 'Alerts' && (unread?.count ?? 0) > 0 && (
                         <span className="absolute -top-1 -right-1 w-2 h-2 bg-red-500 rounded-full" />
                       )}
                     </div>

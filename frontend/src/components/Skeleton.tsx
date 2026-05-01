@@ -1,5 +1,6 @@
 interface SkeletonProps {
   className?: string;
+  style?: React.CSSProperties;
 }
 
 export default function Skeleton({ className = '' }: SkeletonProps) {
