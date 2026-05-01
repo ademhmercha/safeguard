@@ -47,15 +47,15 @@ export default function DashboardPage() {
     <div className="space-y-8">
 
       {/* Header */}
-      <div className="flex items-start justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-gray-400 mb-1">{today}</p>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 tracking-tight">Dashboard</h1>
           <p className="text-gray-400 mt-1 text-sm">Family activity overview</p>
         </div>
         <div className="flex items-center gap-2 bg-green-50 border border-green-100 px-3 py-2 rounded-xl">
           <span className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-          <span className="text-xs font-semibold text-green-700">All systems active</span>
+          <span className="text-xs font-semibold text-green-700">Active</span>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ export default function DashboardPage() {
             )}
           </div>
           {chartData.length > 0 ? (
-            <ResponsiveContainer width="100%" height={220}>
+            <ResponsiveContainer width="100%" height={typeof window !== 'undefined' && window.innerWidth < 640 ? 160 : 220}>
               <AreaChart data={chartData} margin={{ top: 5, right: 5, left: -20, bottom: 0 }}>
                 <defs>
                   <linearGradient id="colorMinutes" x1="0" y1="0" x2="0" y2="1">
