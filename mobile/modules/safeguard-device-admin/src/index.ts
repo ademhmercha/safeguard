@@ -6,4 +6,18 @@ interface DeviceAdminModule {
   requestAdmin(): Promise<void>;
 }
 
-export default requireNativeModule<DeviceAdminModule>('DeviceAdmin');
+const fallback: DeviceAdminModule = {
+  isAdminActive: async () => false,
+  lockDevice: async () => {},
+  requestAdmin: async () => {},
+};
+
+const getNativeModule = (): DeviceAdminModule => {
+  try {
+    return requireNativeModule<DeviceAdminModule>('DeviceAdmin');
+  } catch {
+    return fallback;
+  }
+};
+
+export default getNativeModule();

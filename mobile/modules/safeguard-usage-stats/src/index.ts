@@ -12,4 +12,18 @@ interface UsageStatsModule {
   getStats(startMs: number, endMs: number): Promise<AppUsageStat[]>;
 }
 
-export default requireNativeModule<UsageStatsModule>('UsageStats');
+const fallback: UsageStatsModule = {
+  hasPermission: async () => false,
+  requestPermission: async () => {},
+  getStats: async () => [],
+};
+
+const getNativeModule = (): UsageStatsModule => {
+  try {
+    return requireNativeModule<UsageStatsModule>('UsageStats');
+  } catch {
+    return fallback;
+  }
+};
+
+export default getNativeModule();

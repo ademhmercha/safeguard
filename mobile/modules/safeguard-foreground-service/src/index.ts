@@ -5,4 +5,15 @@ interface ForegroundServiceModule {
   stop(): Promise<void>;
 }
 
-export default requireNativeModule<ForegroundServiceModule>('ForegroundService');
+const noop = async (..._args: unknown[]) => {};
+const fallback: ForegroundServiceModule = { start: noop, stop: noop };
+
+const getNativeModule = (): ForegroundServiceModule => {
+  try {
+    return requireNativeModule<ForegroundServiceModule>('ForegroundService');
+  } catch {
+    return fallback;
+  }
+};
+
+export default getNativeModule();
