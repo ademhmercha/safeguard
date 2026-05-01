@@ -69,7 +69,7 @@ function SidebarContent({ onClose, user, unread, onLogout }: {
             <Shield className="w-4 h-4 text-white" />
           </div>
           <div>
-            <p className="font-bold text-white text-sm tracking-tight">SafeGuard</p>
+            <p className="font-bold text-white text-sm tracking-tight">Rakeb</p>
             <p className="text-[10px] font-medium tracking-widest uppercase" style={{ color: '#3b82f680' }}>Parental Control</p>
           </div>
         </div>
@@ -196,7 +196,7 @@ export default function Layout() {
             <div className="w-6 h-6 rounded-lg flex items-center justify-center" style={{ background: 'linear-gradient(135deg, #3b82f6, #1d4ed8)' }}>
               <Shield className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="font-bold text-gray-900 text-sm">SafeGuard</span>
+            <span className="font-bold text-gray-900 text-sm">Rakeb</span>
           </div>
           {(unread?.count ?? 0) > 0 && (
             <NavLink to="/notifications" className="relative p-2">

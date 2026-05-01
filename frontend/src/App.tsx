@@ -4,6 +4,7 @@ import { useAuthStore } from './stores/authStore';
 import Layout from './components/Layout';
 import { CardSkeleton } from './components/Skeleton';
 
+const LandingPage      = lazy(() => import('./pages/LandingPage'));
 const LoginPage        = lazy(() => import('./pages/LoginPage'));
 const RegisterPage     = lazy(() => import('./pages/RegisterPage'));
 const DashboardPage    = lazy(() => import('./pages/DashboardPage'));
@@ -31,7 +32,7 @@ function PageLoader() {
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
   const token = useAuthStore((s) => s.token);
-  return token ? <>{children}</> : <Navigate to="/login" replace />;
+  return token ? <>{children}</> : <Navigate to="/home" replace />;
 }
 
 export default function App() {
@@ -39,6 +40,7 @@ export default function App() {
     <BrowserRouter>
       <Suspense fallback={<div className="min-h-screen bg-slate-50 flex items-center justify-center"><div className="w-8 h-8 border-2 border-blue-600 border-t-transparent rounded-full animate-spin" /></div>}>
         <Routes>
+          <Route path="/home" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
           <Route path="/register" element={<RegisterPage />} />
           <Route

@@ -18,20 +18,25 @@ function minutesToHours(m: number) {
   return h > 0 ? `${h}h ${min}m` : `${min}m`;
 }
 
-// Compact stat tile for mobile 2x2 grid
-function StatTile({ title, value, icon, gradient, loading }: {
+const tileAccent: Record<string, string> = {
+  blue: '#3b82f6', green: '#10b981', amber: '#f59e0b', red: '#ef4444',
+};
+
+function StatTile({ title, value, icon, colorKey, loading }: {
   title: string; value: string | number; icon: React.ReactNode;
-  gradient: string; loading?: boolean;
+  colorKey: string; loading?: boolean;
 }) {
   if (loading) return <StatCardSkeleton />;
+  const color = tileAccent[colorKey];
   return (
-    <div className={`rounded-2xl p-4 text-white ${gradient} flex flex-col justify-between min-h-[90px]`}>
-      <div className="flex items-start justify-between">
-        <div className="opacity-80">{icon}</div>
+    <div className="bg-white rounded-2xl border border-gray-100 p-4 flex flex-col justify-between min-h-[90px]">
+      <div className="w-8 h-8 rounded-xl flex items-center justify-center [&>svg]:w-4 [&>svg]:h-4 mb-2"
+        style={{ background: `${color}15`, color }}>
+        {icon}
       </div>
       <div>
-        <p className="text-2xl font-bold leading-none">{value}</p>
-        <p className="text-xs opacity-75 mt-1 font-medium">{title}</p>
+        <p className="text-xl font-bold text-gray-900 leading-none">{value}</p>
+        <p className="text-xs text-gray-400 mt-1">{title}</p>
       </div>
     </div>
   );
@@ -77,17 +82,13 @@ export default function DashboardPage() {
       {/* 2x2 stat grid — compact on mobile */}
       <div className="grid grid-cols-2 gap-3">
         <StatTile loading={isLoading} title="Children" value={overview?.totalChildren ?? 0}
-          icon={<Users className="w-5 h-5" />}
-          gradient="bg-gradient-to-br from-blue-500 to-blue-600" />
+          icon={<Users />} colorKey="blue" />
         <StatTile loading={isLoading} title="Devices" value={overview?.totalDevices ?? 0}
-          icon={<Smartphone className="w-5 h-5" />}
-          gradient="bg-gradient-to-br from-emerald-500 to-emerald-600" />
+          icon={<Smartphone />} colorKey="green" />
         <StatTile loading={isLoading} title="Screen Time" value={minutesToHours(overview?.todayScreenTimeMinutes ?? 0)}
-          icon={<Clock className="w-5 h-5" />}
-          gradient="bg-gradient-to-br from-amber-400 to-orange-500" />
+          icon={<Clock />} colorKey="amber" />
         <StatTile loading={isLoading} title="Alerts" value={overview?.unreadAlerts ?? 0}
-          icon={<AlertTriangle className="w-5 h-5" />}
-          gradient="bg-gradient-to-br from-red-500 to-rose-600" />
+          icon={<AlertTriangle />} colorKey="red" />
       </div>
 
       {/* Quick device controls */}
