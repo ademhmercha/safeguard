@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Plus, Pencil, Trash2, ChevronRight } from 'lucide-react';
+import { Plus, Trash2, ChevronRight } from 'lucide-react';
 import { useChildren, useCreateChild, useDeleteChild } from '../hooks/useChildren';
 import ChildAvatar from '../components/ChildAvatar';
 import Modal from '../components/Modal';

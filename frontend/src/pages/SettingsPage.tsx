@@ -38,7 +38,7 @@ export default function SettingsPage() {
           </div>
           <div>
             <label className="label">Email</label>
-            <input className="input" value={user?.email ?? ''} disabled className="input bg-gray-50 cursor-not-allowed" />
+            <input className="input bg-gray-50 cursor-not-allowed" value={user?.email ?? ''} disabled />
             <p className="text-xs text-gray-400 mt-1">Email cannot be changed here</p>
           </div>
           <div className="flex justify-end">
