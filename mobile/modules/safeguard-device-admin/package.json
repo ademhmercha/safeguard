@@ -1,0 +1,10 @@
+{
+  "name": "safeguard-device-admin",
+  "version": "1.0.0",
+  "description": "Android Device Admin API for SafeGuard",
+  "main": "src/index.ts",
+  "files": ["android", "src"],
+  "peerDependencies": {
+    "expo-modules-core": "*"
+  }
+}

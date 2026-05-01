@@ -3,6 +3,8 @@ import * as TaskManager from 'expo-task-manager';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { api } from '../lib/api';
 import { flushAllPending, onAppBackground } from './activityTracker';
+import { pollPendingCommands } from './commandPoller';
+import { reportUsageStats } from './usageStatsTracker';
 
 const TASK_NAME = 'safeguard-background-sync';
 
@@ -12,11 +14,13 @@ TaskManager.defineTask(TASK_NAME, async () => {
     const childProfileId = await AsyncStorage.getItem('childProfileId');
     if (!deviceId || !childProfileId) return BackgroundFetch.BackgroundFetchResult.NoData;
 
-    // Flush any pending browser visits / search terms
     await onAppBackground();
     await flushAllPending();
 
-    const screenMinutes = await getScreenTimeMinutes();
+    // Poll for commands that arrived while offline
+    await pollPendingCommands();
+
+    const screenMinutes = await getAccumulatedScreenMinutes();
     const today = new Date().toISOString().split('T')[0];
 
     await api.post('/monitoring/screen-time', {
@@ -25,8 +29,14 @@ TaskManager.defineTask(TASK_NAME, async () => {
       date: today,
     });
 
-    const pendingCommands = await api.get(`/control/policies/${childProfileId}`);
-    await AsyncStorage.setItem('activePolicies', JSON.stringify(pendingCommands.data));
+    // Check screen-time limit and auto-lock if exceeded
+    await api.post(`/devices/${deviceId}/screen-time-lock`).catch(() => null);
+
+    // Report real per-app usage from UsageStatsManager
+    await reportUsageStats();
+
+    const policies = await api.get(`/control/policies/${childProfileId}`);
+    await AsyncStorage.setItem('activePolicies', JSON.stringify(policies.data));
 
     return BackgroundFetch.BackgroundFetchResult.NewData;
   } catch {
@@ -34,18 +44,18 @@ TaskManager.defineTask(TASK_NAME, async () => {
   }
 });
 
-async function getScreenTimeMinutes(): Promise<number> {
+async function getAccumulatedScreenMinutes(): Promise<number> {
   const stored = await AsyncStorage.getItem('sessionStartTime');
   if (!stored) return 0;
-  const startTime = parseInt(stored);
-  const now = Date.now();
-  return Math.floor((now - startTime) / 60_000);
+  return Math.floor((Date.now() - parseInt(stored)) / 60_000);
 }
 
 export async function registerBackgroundSync() {
   const status = await BackgroundFetch.getStatusAsync();
-  if (status === BackgroundFetch.BackgroundFetchStatus.Restricted ||
-      status === BackgroundFetch.BackgroundFetchStatus.Denied) return;
+  if (
+    status === BackgroundFetch.BackgroundFetchStatus.Restricted ||
+    status === BackgroundFetch.BackgroundFetchStatus.Denied
+  ) return;
 
   const isRegistered = await TaskManager.isTaskRegisteredAsync(TASK_NAME);
   if (!isRegistered) {
@@ -57,7 +67,12 @@ export async function registerBackgroundSync() {
   }
 }
 
-export async function reportAppUsage(childProfileId: string, appName: string, packageName: string, minutes: number) {
+export async function reportAppUsage(
+  childProfileId: string,
+  appName: string,
+  packageName: string,
+  minutes: number
+) {
   const today = new Date().toISOString().split('T')[0];
   await api.post('/monitoring/app-usage', {
     childProfileId, appName, packageName, usageMinutes: minutes, date: today,

@@ -1,11 +1,28 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { Alert, Linking } from 'react-native';
+import { Alert } from 'react-native';
 import { api } from '../lib/api';
+import DeviceAdmin from 'safeguard-device-admin';
 
-export async function executeCommand(commandId: string, command: string, payload?: Record<string, string>) {
+async function lockDevice() {
+  await AsyncStorage.setItem('deviceLocked', 'true');
+  try {
+    const isAdmin = await DeviceAdmin.isAdminActive();
+    if (isAdmin) {
+      await DeviceAdmin.lockDevice();
+    }
+  } catch {
+    // Native module unavailable or admin not granted — UI lock still active via store
+  }
+}
+
+export async function executeCommand(
+  commandId: string,
+  command: string,
+  payload?: Record<string, string>
+) {
   switch (command) {
     case 'LOCK_DEVICE':
-      await AsyncStorage.setItem('deviceLocked', 'true');
+      await lockDevice();
       Alert.alert('Device Locked', 'Your device has been locked by your parent.');
       break;
 

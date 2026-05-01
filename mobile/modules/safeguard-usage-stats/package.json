@@ -1,0 +1,10 @@
+{
+  "name": "safeguard-usage-stats",
+  "version": "1.0.0",
+  "description": "Android UsageStatsManager for SafeGuard",
+  "main": "src/index.ts",
+  "files": ["android", "src"],
+  "peerDependencies": {
+    "expo-modules-core": "*"
+  }
+}

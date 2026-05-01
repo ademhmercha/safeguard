@@ -13,6 +13,8 @@ import { setupAppStateTracking, flushAllPending } from '../services/activityTrac
 import { supabase } from '../lib/supabase';
 import MonitoredWebView from '../components/MonitoredWebView';
 import { api } from '../lib/api';
+import DeviceAdmin from 'safeguard-device-admin';
+import UsageStats from 'safeguard-usage-stats';
 
 function minutesToHours(m: number) {
   const h = Math.floor(m / 60);
@@ -25,6 +27,14 @@ export default function HomeScreen() {
   const sessionStartRef = useRef(Date.now());
   const appState = useRef(AppState.currentState);
   const [browserOpen, setBrowserOpen] = useState(false);
+  const [adminActive, setAdminActive] = useState(true);
+  const [usagePermission, setUsagePermission] = useState(true);
+
+  useEffect(() => {
+    // Check native permissions once on mount
+    DeviceAdmin.isAdminActive().then(setAdminActive).catch(() => setAdminActive(true));
+    UsageStats.hasPermission().then(setUsagePermission).catch(() => setUsagePermission(true));
+  }, []);
 
   useEffect(() => {
     const cleanupNotif = setupNotificationListeners(async (data) => {
@@ -48,7 +58,6 @@ export default function HomeScreen() {
         .subscribe();
     }
 
-    // App session + flush tracking
     const cleanupTracking = setupAppStateTracking(() => ({
       appName: 'SafeGuard',
       packageName: 'com.safeguard.child',
@@ -58,7 +67,6 @@ export default function HomeScreen() {
       if (appState.current.match(/inactive|background/) && next === 'active') {
         sessionStartRef.current = Date.now();
       }
-
       if (next.match(/inactive|background/) && childProfileId) {
         const mins = Math.floor((Date.now() - sessionStartRef.current) / 60_000);
         if (mins > 0) {
@@ -71,7 +79,6 @@ export default function HomeScreen() {
         await flushAllPending().catch(() => null);
         await AsyncStorage.setItem('sessionStartTime', String(Date.now()));
       }
-
       appState.current = next;
     });
 
@@ -102,6 +109,20 @@ export default function HomeScreen() {
         </View>
       </View>
 
+      {!adminActive && (
+        <TouchableOpacity style={styles.warningCard} onPress={() => DeviceAdmin.requestAdmin().catch(() => null)}>
+          <Text style={styles.warningTitle}>⚠️ Enable Device Lock</Text>
+          <Text style={styles.warningText}>Tap to activate Device Admin so SafeGuard can lock the screen when your parent requires it.</Text>
+        </TouchableOpacity>
+      )}
+
+      {!usagePermission && (
+        <TouchableOpacity style={styles.warningCard} onPress={() => UsageStats.requestPermission().catch(() => null)}>
+          <Text style={styles.warningTitle}>📊 Enable App Monitoring</Text>
+          <Text style={styles.warningText}>Tap to grant usage access so SafeGuard can report which apps you use.</Text>
+        </TouchableOpacity>
+      )}
+
       <View style={styles.card}>
         <Text style={styles.cardTitle}>Device Status</Text>
         <View style={styles.statusRow}>
@@ -111,6 +132,10 @@ export default function HomeScreen() {
         <View style={styles.statusRow}>
           <View style={styles.dot} />
           <Text style={styles.statusLabel}>Connected to SafeGuard</Text>
+        </View>
+        <View style={styles.statusRow}>
+          <View style={[styles.dot, !adminActive && styles.dotWarning]} />
+          <Text style={styles.statusLabel}>Device admin {adminActive ? 'active' : 'not activated'}</Text>
         </View>
       </View>
 
@@ -126,7 +151,10 @@ export default function HomeScreen() {
       <Modal visible={browserOpen} animationType="slide">
         <SafeAreaView style={{ flex: 1 }}>
           <MonitoredWebView onClose={() => setBrowserOpen(false)} />
-          <TouchableOpacity style={styles.closeButton} onPress={async () => { await flushAllPending(); setBrowserOpen(false); }}>
+          <TouchableOpacity
+            style={styles.closeButton}
+            onPress={async () => { await flushAllPending(); setBrowserOpen(false); }}
+          >
             <Text style={styles.closeButtonText}>Close Browser</Text>
           </TouchableOpacity>
         </SafeAreaView>
@@ -146,8 +174,12 @@ const styles = StyleSheet.create({
   cardTitle: { fontSize: 16, fontWeight: '600', color: '#0f172a', marginBottom: 12 },
   statusRow: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
   dot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#22c55e', marginRight: 10 },
+  dotWarning: { backgroundColor: '#f59e0b' },
   statusLabel: { fontSize: 14, color: '#475569' },
   infoText: { fontSize: 14, color: '#64748b', lineHeight: 22 },
+  warningCard: { backgroundColor: '#fffbeb', borderWidth: 1, borderColor: '#f59e0b', borderRadius: 16, padding: 16, marginBottom: 16 },
+  warningTitle: { fontSize: 15, fontWeight: '600', color: '#92400e', marginBottom: 4 },
+  warningText: { fontSize: 13, color: '#78350f', lineHeight: 20 },
   lockedContainer: { flex: 1, backgroundColor: '#1e3a8a', justifyContent: 'center', alignItems: 'center', padding: 40 },
   lockIcon: { fontSize: 64, marginBottom: 24 },
   lockedTitle: { fontSize: 28, fontWeight: 'bold', color: '#fff', marginBottom: 12, textAlign: 'center' },

@@ -1,0 +1,10 @@
+{
+  "name": "safeguard-foreground-service",
+  "version": "1.0.0",
+  "description": "Android foreground service for SafeGuard monitoring",
+  "main": "src/index.ts",
+  "files": ["android", "src"],
+  "peerDependencies": {
+    "expo-modules-core": "*"
+  }
+}

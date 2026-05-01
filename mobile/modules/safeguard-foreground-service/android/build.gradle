@@ -1,0 +1,12 @@
+apply plugin: 'com.android.library'
+apply plugin: 'kotlin-android'
+apply plugin: 'expo-module'
+
+android {
+  namespace 'safeguard.foreground'
+  compileSdkVersion 34
+  defaultConfig {
+    minSdkVersion 26
+    targetSdkVersion 34
+  }
+}
