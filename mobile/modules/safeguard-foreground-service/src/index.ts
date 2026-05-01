@@ -1,19 +1,13 @@
-import { requireNativeModule } from 'expo-modules-core';
+import { NativeModules } from 'react-native';
 
 interface ForegroundServiceModule {
   start(title: string, text: string): Promise<void>;
   stop(): Promise<void>;
 }
 
-const noop = async (..._args: unknown[]) => {};
-const fallback: ForegroundServiceModule = { start: noop, stop: noop };
-
-const getNativeModule = (): ForegroundServiceModule => {
-  try {
-    return requireNativeModule<ForegroundServiceModule>('ForegroundService');
-  } catch {
-    return fallback;
-  }
+const fallback: ForegroundServiceModule = {
+  start: async () => {},
+  stop: async () => {},
 };
 
-export default getNativeModule();
+export default (NativeModules.ForegroundService as ForegroundServiceModule) ?? fallback;

@@ -1,4 +1,4 @@
-import { requireNativeModule } from 'expo-modules-core';
+import { NativeModules } from 'react-native';
 
 export interface AppUsageStat {
   packageName: string;
@@ -18,12 +18,4 @@ const fallback: UsageStatsModule = {
   getStats: async () => [],
 };
 
-const getNativeModule = (): UsageStatsModule => {
-  try {
-    return requireNativeModule<UsageStatsModule>('UsageStats');
-  } catch {
-    return fallback;
-  }
-};
-
-export default getNativeModule();
+export default (NativeModules.UsageStats as UsageStatsModule) ?? fallback;

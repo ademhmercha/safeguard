@@ -49,9 +49,7 @@
       ],
       "expo-background-fetch",
       "expo-task-manager",
-      "./plugins/withForegroundService",
-      "./plugins/withDeviceAdmin",
-      "./plugins/withUsageStats"
+      "./plugins/withNativeModules"
     ],
     "extra": {
       "eas": {

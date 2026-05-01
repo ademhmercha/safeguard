@@ -1,4 +1,4 @@
-import { requireNativeModule } from 'expo-modules-core';
+import { NativeModules } from 'react-native';
 
 interface DeviceAdminModule {
   isAdminActive(): Promise<boolean>;
@@ -12,12 +12,4 @@ const fallback: DeviceAdminModule = {
   requestAdmin: async () => {},
 };
 
-const getNativeModule = (): DeviceAdminModule => {
-  try {
-    return requireNativeModule<DeviceAdminModule>('DeviceAdmin');
-  } catch {
-    return fallback;
-  }
-};
-
-export default getNativeModule();
+export default (NativeModules.DeviceAdmin as DeviceAdminModule) ?? fallback;
