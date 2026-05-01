@@ -1,234 +1,237 @@
-# SafeGuard — Parental Control Platform
+# Rakeb — Parental Control Platform
 
-A full-stack parental control and child device monitoring platform built with React, React Native (Expo), Node.js, and Supabase.
+> Real-time parental monitoring and control for modern families.
 
-## Architecture
+**Live:** [rakeb.vercel.app](https://safeguard-frontend.vercel.app) · **Backend:** Railway · **Mobile:** Expo / EAS
 
-```
-safeguard/
-├── backend/          Node.js + Express + Prisma → Railway
-├── frontend/         React + Vite + Tailwind → Vercel
-├── mobile/           React Native + Expo → EAS Build
-├── docker/           Docker Compose for local development
-└── .github/          GitHub Actions CI/CD
-```
+---
+
+## What is Rakeb?
+
+Rakeb is a full-stack parental control platform that gives parents full visibility and real-time control over their children's digital activity — from any device, anywhere.
+
+| Layer | Stack | Hosting |
+|-------|-------|---------|
+| Parent Dashboard | React 18 + Vite + Tailwind CSS | Vercel |
+| Backend API | Node.js + Express + Prisma | Railway |
+| Database | PostgreSQL (via Supabase) | Supabase |
+| Mobile (child device) | React Native + Expo | EAS Build |
+| Real-time | Supabase Realtime | Supabase |
+| Push notifications | Firebase Cloud Messaging | Firebase |
+
+---
 
 ## Features
 
-- **Parent Dashboard**: Login, child profiles, device management, screen time charts, app usage reports, remote lock/unlock, schedules, app blocking, notifications
-- **Child Mobile App**: Device pairing, background activity tracking, push notifications, remote command execution
-- **Real-time Commands**: Lock/unlock devices, block apps via Supabase Realtime + FCM fallback
-- **Analytics**: Daily/weekly screen time charts, top apps by usage, overview stats
+### Parent Dashboard
+- Real-time overview — children, devices, screen time, alerts
+- Remote **lock / unlock** any paired device instantly
+- **Website blocking** — block any domain, child sees an alert when blocked
+- **App blocking** — restrict specific apps on child device
+- **Screen time charts** — daily and weekly breakdowns
+- **Browser history** — full URL history, search terms, top domains
+- **Activity timeline** — chronological log of all activity
+- **Real-time alerts** — instant toast notification when child tries to visit a blocked site
+- **Schedules** — bedtime and study hour restrictions
+- PWA-ready — installable from Safari/Chrome
 
-## Prerequisites
+### Child Mobile App
+- Simple pairing with a 6-character code
+- Monitored in-app browser — every visit tracked in real time
+- Blocked site detection — navigation stops instantly with an alert
+- Screen time reporting on app background
+- Device lock screen when parent locks remotely
+- Supabase Realtime for instant command delivery
+
+---
+
+## Project Structure
+
+```
+rakeb/
+├── backend/          Express API + Prisma ORM
+│   ├── src/
+│   │   ├── routes/       All API endpoints
+│   │   ├── services/     Command & notification services
+│   │   ├── middleware/   Auth, error handling
+│   │   └── utils/        Prisma, Supabase, Firebase, Logger
+│   └── prisma/           Database schema
+├── frontend/         React parent dashboard
+│   ├── src/
+│   │   ├── pages/        All dashboard pages
+│   │   ├── components/   Layout, Modal, StatCard, Skeleton
+│   │   ├── hooks/        React Query data hooks
+│   │   ├── stores/       Zustand auth & child stores
+│   │   └── lib/          Axios API client, Supabase client
+│   └── public/           PWA manifest, service worker, icons
+├── mobile/           React Native child app
+│   ├── app/              Expo Router entry
+│   └── src/
+│       ├── screens/      PairingScreen, HomeScreen
+│       ├── components/   MonitoredWebView
+│       ├── services/     Tracking, notifications, commands
+│       └── stores/       Device state (Zustand)
+└── docker/           Docker Compose for local dev
+```
+
+---
+
+## Local Development
+
+### Prerequisites
 
 - Node.js 20+
-- Supabase account (free tier)
-- Firebase project (for FCM push notifications)
-- Railway account (backend deployment)
-- Vercel account (frontend deployment)
+- Supabase project → [supabase.com](https://supabase.com)
+- Firebase project → [console.firebase.google.com](https://console.firebase.google.com)
 
----
-
-## 1. Supabase Setup
-
-1. Create a new project at [supabase.com](https://supabase.com)
-2. Go to **SQL Editor** and run `backend/supabase/migrations/001_initial_schema.sql`
-3. Copy your project URL and keys from **Settings → API**:
-   - `SUPABASE_URL`
-   - `SUPABASE_SERVICE_ROLE_KEY` (service role — keep secret)
-   - `SUPABASE_ANON_KEY` (anon key — safe to expose)
-4. Copy your database connection strings from **Settings → Database**:
-   - `DATABASE_URL` (use the **Session mode / PgBouncer** URI)
-   - `DIRECT_URL` (use the **Direct** URI)
-
----
-
-## 2. Firebase Setup (FCM)
-
-1. Create a project at [console.firebase.google.com](https://console.firebase.google.com)
-2. Go to **Project Settings → Service accounts → Generate new private key**
-3. Copy the entire JSON and set it as `FIREBASE_SERVICE_ACCOUNT_KEY` (one-line JSON string)
-
----
-
-## 3. Local Development
+### Backend
 
 ```bash
-# Start local Postgres
-cd docker
-docker compose -f docker-compose.dev.yml up -d
-
-# Backend
 cd backend
-cp .env.example .env   # fill in your Supabase keys
+cp .env.example .env    # fill in your keys
 npm install
 npx prisma generate
 npx prisma db push
-npm run dev            # http://localhost:3000
+npm run dev             # http://localhost:3000
+```
 
-# Frontend (new terminal)
+### Frontend
+
+```bash
 cd frontend
 cp .env.example .env
 npm install
-npm run dev            # http://localhost:5173
+npm run dev             # http://localhost:5173
+```
 
-# Mobile (new terminal)
+### Mobile
+
+```bash
 cd mobile
 cp .env.example .env
 npm install
-npx expo start
+npx expo start --lan    # scan QR with Expo Go
 ```
 
 ---
 
-## 4. Railway Deployment (Backend)
+## Deployment
 
-1. Push repo to GitHub
-2. Go to [railway.app](https://railway.app) → New Project → Deploy from GitHub
-3. Select the `backend/` folder (or set root to `backend`)
-4. Railway will auto-detect `railway.toml` and use `npm run build` + `node dist/index.js`
-5. Add environment variables in Railway dashboard (see `.env.example`):
+### Backend → Railway
 
-```
+1. Import repo at [railway.app](https://railway.app)
+2. Set **Root Directory** → `backend`
+3. Set **Build Command** → `npm run build`
+4. Set **Start Command** → `npm start`
+5. Add environment variables:
+
+```env
 NODE_ENV=production
-SUPABASE_URL=...
-SUPABASE_SERVICE_ROLE_KEY=...
+PORT=3000
 DATABASE_URL=...
 DIRECT_URL=...
-FIREBASE_SERVICE_ACCOUNT_KEY=...
+SUPABASE_URL=...
+SUPABASE_SERVICE_ROLE_KEY=...
+FIREBASE_SERVICE_ACCOUNT_KEY=...   # full JSON, single line
 FRONTEND_URL=https://your-app.vercel.app
 ```
 
-6. After first deploy, run Prisma migration:
-   ```bash
-   railway run npx prisma db push
-   ```
+### Frontend → Vercel
 
----
-
-## 5. Vercel Deployment (Frontend)
-
-1. Go to [vercel.com](https://vercel.com) → Import Repository
-2. Set **Root Directory** to `frontend`
+1. Import repo at [vercel.com](https://vercel.com)
+2. Set **Root Directory** → `frontend`
 3. Add environment variables:
-   ```
-   VITE_API_URL=https://your-backend.railway.app/api
-   VITE_SUPABASE_URL=...
-   VITE_SUPABASE_ANON_KEY=...
-   ```
-4. Deploy — Vercel auto-handles SPA routing via `vercel.json`
 
----
+```env
+VITE_API_URL=https://your-backend.up.railway.app/api
+VITE_SUPABASE_URL=...
+VITE_SUPABASE_ANON_KEY=...
+```
 
-## 6. GitHub Actions CI/CD
-
-Add these secrets to your GitHub repository (**Settings → Secrets**):
-
-| Secret | Description |
-|--------|-------------|
-| `RAILWAY_TOKEN` | Railway API token |
-| `VERCEL_TOKEN` | Vercel API token |
-| `VERCEL_ORG_ID` | Vercel organization ID |
-| `VERCEL_PROJECT_ID` | Vercel project ID |
-| `VITE_API_URL` | Backend URL for build |
-| `VITE_SUPABASE_URL` | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Supabase anon key |
-
-Workflows:
-- **CI** (`ci.yml`): Runs on every PR — lint, build, security audit
-- **Deploy** (`deploy.yml`): Runs on push to `main` — deploys backend to Railway, frontend to Vercel
-
----
-
-## 7. Mobile App (EAS Build)
+### Mobile → EAS Build (standalone APK)
 
 ```bash
 cd mobile
 npm install -g eas-cli
 eas login
-eas build:configure
-
-# Development APK
 eas build --platform android --profile preview
-
-# Production
-eas build --platform android --profile production
 ```
 
-Update `app.json` with your EAS project ID from `eas.json`.
+Returns a download link for a `.apk` you can install directly — no Expo Go needed.
 
 ---
 
-## Environment Variables Reference
+## Environment Variables
 
-### Backend (`backend/.env`)
-
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `NODE_ENV` | Yes | `development` or `production` |
-| `PORT` | No | Default `3000` |
-| `SUPABASE_URL` | Yes | Supabase project URL |
-| `SUPABASE_SERVICE_ROLE_KEY` | Yes | Supabase service role key |
-| `DATABASE_URL` | Yes | PostgreSQL connection (PgBouncer) |
-| `DIRECT_URL` | Yes | PostgreSQL direct connection |
-| `FIREBASE_SERVICE_ACCOUNT_KEY` | Yes | Firebase service account JSON (stringified) |
-| `FRONTEND_URL` | Yes | CORS origin |
-| `BETTERSTACK_SOURCE_TOKEN` | No | Betterstack logging token |
-| `LOG_LEVEL` | No | Default `info` |
-
-### Frontend (`frontend/.env`)
+### `backend/.env`
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `VITE_API_URL` | Yes | Backend API base URL |
-| `VITE_SUPABASE_URL` | No | Supabase URL (for future direct queries) |
-| `VITE_SUPABASE_ANON_KEY` | No | Supabase anon key |
+| `NODE_ENV` | ✓ | `development` or `production` |
+| `PORT` | | Default `3000` |
+| `DATABASE_URL` | ✓ | PostgreSQL (PgBouncer) |
+| `DIRECT_URL` | ✓ | PostgreSQL direct |
+| `SUPABASE_URL` | ✓ | Supabase project URL |
+| `SUPABASE_SERVICE_ROLE_KEY` | ✓ | Service role key (secret) |
+| `FIREBASE_SERVICE_ACCOUNT_KEY` | ✓ | Firebase JSON (stringified) |
+| `FRONTEND_URL` | ✓ | CORS allowed origin |
 
-### Mobile (`mobile/.env`)
+### `frontend/.env`
 
 | Variable | Required | Description |
 |----------|----------|-------------|
-| `EXPO_PUBLIC_API_URL` | Yes | Backend API base URL |
+| `VITE_API_URL` | ✓ | Backend API base URL |
+| `VITE_SUPABASE_URL` | ✓ | Supabase URL |
+| `VITE_SUPABASE_ANON_KEY` | ✓ | Supabase anon key |
+
+### `mobile/.env`
+
+| Variable | Required | Description |
+|----------|----------|-------------|
+| `EXPO_PUBLIC_API_URL` | ✓ | Backend API base URL |
+| `EXPO_PUBLIC_SUPABASE_URL` | ✓ | Supabase URL |
+| `EXPO_PUBLIC_SUPABASE_ANON_KEY` | ✓ | Supabase anon key |
 
 ---
 
-## Monitoring
+## API Reference
 
-### Grafana Cloud (Free Tier)
-1. Create account at [grafana.com](https://grafana.com)
-2. Add a Prometheus data source pointed at your Railway metrics endpoint
-3. Import the Node.js dashboard (ID: 11159) for request rates, error rates, latency
+### Public (no auth)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/health` | Health check |
+| `POST` | `/api/auth/register` | Register parent |
+| `POST` | `/api/auth/login` | Login |
+| `POST` | `/api/devices/pair` | Pair child device |
+| `POST` | `/api/activity/browser-visit` | Report browser visit (device) |
+| `POST` | `/api/activity/browser-visits/batch` | Batch visits (device) |
+| `POST` | `/api/monitoring/screen-time` | Report screen time (device) |
 
-### Betterstack Logging
-1. Create account at [betterstack.com](https://betterstack.com)
-2. Create a new source and copy the token
-3. Set `BETTERSTACK_SOURCE_TOKEN` in Railway environment variables
-4. Logs from Winston will stream automatically
+### Authenticated (parent token)
+| Method | Endpoint | Description |
+|--------|----------|-------------|
+| `GET` | `/api/children` | List children |
+| `POST` | `/api/children` | Create child |
+| `GET` | `/api/devices` | List devices |
+| `DELETE` | `/api/devices/:id` | Remove device |
+| `POST` | `/api/devices/generate-pairing-code` | Generate pairing code |
+| `POST` | `/api/control/lock/:deviceId` | Lock device |
+| `POST` | `/api/control/unlock/:deviceId` | Unlock device |
+| `POST` | `/api/control/block-website` | Block a domain |
+| `POST` | `/api/control/block-app` | Block an app |
+| `GET` | `/api/analytics/overview` | Dashboard stats |
+| `GET` | `/api/activity/browser-history/:childId` | Browser history |
+| `GET` | `/api/activity/timeline/:childId` | Activity timeline |
+| `GET` | `/api/notifications` | Notifications list |
 
 ---
 
-## API Endpoints
+## Keep-Alive (Recommended)
 
-| Method | Path | Auth | Description |
-|--------|------|------|-------------|
-| POST | `/api/auth/register` | — | Register parent account |
-| POST | `/api/auth/login` | — | Login |
-| POST | `/api/auth/refresh` | — | Refresh token |
-| GET | `/api/children` | ✓ | List children |
-| POST | `/api/children` | ✓ | Create child profile |
-| GET | `/api/devices` | ✓ | List devices |
-| POST | `/api/devices/generate-pairing-code` | ✓ | Generate pairing code |
-| POST | `/api/devices/pair` | — | Pair mobile device |
-| POST | `/api/control/lock/:deviceId` | ✓ | Lock device |
-| POST | `/api/control/unlock/:deviceId` | ✓ | Unlock device |
-| POST | `/api/control/block-app` | ✓ | Block an app |
-| POST | `/api/monitoring/screen-time` | ✓ | Report screen time |
-| GET | `/api/analytics/overview` | ✓ | Dashboard overview stats |
-| GET | `/health` | — | Health check |
+Railway free tier sleeps after inactivity. Set up a free monitor on [uptimerobot.com](https://uptimerobot.com) to ping `/health` every 5 minutes.
 
 ---
 
 ## License
 
-MIT
+MIT © 2026 Rakeb
