@@ -1,6 +1,33 @@
-const { withAndroidManifest } = require('@expo/config-plugins');
+const { withAndroidManifest, withDangerousMod } = require('@expo/config-plugins');
+const path = require('path');
+const fs = require('fs');
 
-module.exports = function withDeviceAdmin(config) {
+const DEVICE_ADMIN_XML = `<?xml version="1.0" encoding="utf-8"?>
+<device-admin>
+  <uses-policies>
+    <force-lock />
+  </uses-policies>
+</device-admin>
+`;
+
+// Step 1: write device_admin_policies.xml into the app's res/xml directory
+function withDeviceAdminXml(config) {
+  return withDangerousMod(config, [
+    'android',
+    (config) => {
+      const xmlDir = path.join(
+        config.modRequest.platformProjectRoot,
+        'app', 'src', 'main', 'res', 'xml'
+      );
+      fs.mkdirSync(xmlDir, { recursive: true });
+      fs.writeFileSync(path.join(xmlDir, 'device_admin_policies.xml'), DEVICE_ADMIN_XML);
+      return config;
+    },
+  ]);
+}
+
+// Step 2: declare the receiver in AndroidManifest.xml
+function withDeviceAdminReceiver(config) {
   return withAndroidManifest(config, (mod) => {
     const application = mod.modResults.manifest.application[0];
     if (!application.receiver) application.receiver = [];
@@ -30,4 +57,10 @@ module.exports = function withDeviceAdmin(config) {
 
     return mod;
   });
+}
+
+module.exports = function withDeviceAdmin(config) {
+  config = withDeviceAdminXml(config);
+  config = withDeviceAdminReceiver(config);
+  return config;
 };
