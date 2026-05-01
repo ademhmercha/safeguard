@@ -89,8 +89,8 @@ router.post('/activity/browser-visit',
       });
 
       // Real-time push to parent dashboard
-      await supabase.channel(`parent:${child.parent.id}`).send({
-        type: 'broadcast',
+      void supabase.channel(`parent:${child.parent.id}`).send({
+        type: 'broadcast' as const,
         event: 'blocked_site',
         payload: { childName: child.name, domain, url: req.body.url, at: new Date().toISOString() },
       });

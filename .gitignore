@@ -2,6 +2,10 @@
 node_modules/
 **/node_modules/
 
+# Root lock files (monorepo - use subproject lock files)
+/package-lock.json
+/yarn.lock
+
 # Build output
 dist/
 build/
