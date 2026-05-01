@@ -1,5 +1,5 @@
 import { Router, Request, Response } from 'express';
-import { body, validationResult } from 'express-validator';
+import { body, param, validationResult } from 'express-validator';
 import { prisma } from '../utils/prisma';
 
 const router = Router();
@@ -32,6 +32,21 @@ router.post('/pair',
       },
     });
     res.json(updated);
+  }
+);
+
+router.get('/:id/status',
+  param('id').isUUID(),
+  async (req: Request, res: Response) => {
+    const errors = validationResult(req);
+    if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+    const device = await prisma.device.findUnique({
+      where: { id: req.params.id },
+      select: { isLocked: true },
+    });
+    if (!device) return res.status(404).json({ error: 'Device not found' });
+    res.json({ isLocked: device.isLocked });
   }
 );
 

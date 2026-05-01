@@ -1,5 +1,6 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { api } from '../lib/api';
 
 interface DeviceState {
   deviceId: string | null;
@@ -36,6 +37,16 @@ export const useDeviceStore = create<DeviceState>((set) => ({
       isPaired: !!deviceId,
       isLocked: locked === 'true',
     });
+
+    if (deviceId) {
+      try {
+        const { data } = await api.get(`/devices/${deviceId}/status`);
+        set({ isLocked: data.isLocked });
+        await AsyncStorage.setItem('deviceLocked', String(data.isLocked));
+      } catch {
+        // server unreachable — keep AsyncStorage value
+      }
+    }
   },
 
   setLocked: (locked) => set({ isLocked: locked }),

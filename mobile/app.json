@@ -12,12 +12,17 @@
       "resizeMode": "contain",
       "backgroundColor": "#2563eb"
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "com.safeguard.child",
       "infoPlist": {
-        "UIBackgroundModes": ["fetch", "remote-notification"]
+        "UIBackgroundModes": [
+          "fetch",
+          "remote-notification"
+        ]
       }
     },
     "android": {
@@ -29,7 +34,9 @@
       "permissions": [
         "RECEIVE_BOOT_COMPLETED",
         "FOREGROUND_SERVICE",
-        "REQUEST_INSTALL_PACKAGES"
+        "REQUEST_INSTALL_PACKAGES",
+        "android.permission.RECEIVE_BOOT_COMPLETED",
+        "android.permission.WAKE_LOCK"
       ]
     },
     "plugins": [
@@ -43,6 +50,10 @@
       "expo-background-fetch",
       "expo-task-manager"
     ],
-    "extra": {}
+    "extra": {
+      "eas": {
+        "projectId": "4f200c6d-b974-4237-9c58-376d6c997e09"
+      }
+    }
   }
 }

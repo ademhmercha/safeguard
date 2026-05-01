@@ -7,10 +7,16 @@
     },
     "preview": {
       "distribution": "internal",
-      "android": { "buildType": "apk" }
+      "android": { "buildType": "apk" },
+      "env": {
+        "EXPO_PUBLIC_API_URL": "https://safeguard-backend-production-fc1a.up.railway.app/api",
+        "EXPO_PUBLIC_SUPABASE_URL": "https://giunqkyzpftnkjqjbryw.supabase.co",
+        "EXPO_PUBLIC_SUPABASE_ANON_KEY": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdpdW5xa3l6cGZ0bmtqcWpicnl3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc1NjQ1NTIsImV4cCI6MjA5MzE0MDU1Mn0.lkZB0hYSgQ9ZpOgcUPhDsan8CG32azMegr8ED931V48",
+        "NPM_CONFIG_LEGACY_PEER_DEPS": "true"
+      }
     },
     "production": {
-      "android": { "buildType": "aab" }
+      "android": { "buildType": "app-bundle" }
     }
   },
   "submit": {
